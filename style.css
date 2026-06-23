@@ -1,0 +1,384 @@
+/* SNAKE QUIZ ADVENTURE — style.css */
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --yellow: #FFD93D;
+  --green:  #27ae60;
+  --dark:   #1a237e;
+  --bg:     linear-gradient(160deg, #1a237e 0%, #283593 50%, #0d47a1 100%);
+}
+
+html, body { height: 100%; width: 100%; overflow: hidden; font-family: 'Nunito', sans-serif; background: var(--dark); }
+
+/* SCREENS */
+.screen { display: none; position: fixed; inset: 0; overflow: hidden; background: var(--bg); }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ── MENU ── */
+#screen-menu { align-items: center; justify-content: center; overflow-y: auto; }
+.menu-content { display: flex; flex-direction: column; align-items: center; gap: 28px; padding: 40px 20px; z-index: 1; }
+.game-logo { text-align: center; }
+.logo-emoji { font-size: 64px; line-height: 1; margin-bottom: 8px; animation: bounce 2s infinite; }
+.logo-title { font-family: 'Fredoka One', sans-serif; font-size: 52px; color: var(--yellow); text-shadow: 3px 3px 0 rgba(0,0,0,0.3); line-height: 1; }
+.logo-sub { font-family: 'Fredoka One', sans-serif; font-size: 28px; color: #90caf9; letter-spacing: 4px; margin-bottom: 8px; }
+.logo-desc { font-size: 15px; color: rgba(255,255,255,0.7); font-weight: 600; }
+.menu-buttons { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 280px; }
+.menu-deco { display: flex; gap: 24px; font-size: 28px; opacity: 0.2; animation: spin 10s linear infinite; }
+.stars { position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(circle,#fff 1px,transparent 1px),radial-gradient(circle,#fff 1px,transparent 1px),radial-gradient(circle,#fff 1px,transparent 1px);
+  background-size: 200px 200px,300px 300px,150px 150px;
+  background-position: 0 0,100px 50px,50px 150px; opacity: 0.15; }
+
+/* ── TUTORIAL ── */
+#screen-tutorial { overflow-y: auto; }
+.tutorial-content { display: flex; flex-direction: column; gap: 12px; padding: 12px 16px 30px; }
+.tut-card { background: rgba(255,255,255,0.1); border-radius: 14px; padding: 16px; display: flex; gap: 14px; align-items: flex-start; }
+.tut-icon { font-size: 32px; flex-shrink: 0; }
+.tut-card h3 { font-size: 16px; color: var(--yellow); margin-bottom: 4px; }
+.tut-card p { font-size: 13px; color: rgba(255,255,255,0.8); line-height: 1.5; }
+
+/* ── SETUP ── */
+#screen-setup { overflow-y: auto; }
+.setup-content { display: flex; flex-direction: column; gap: 20px; padding: 16px; }
+.setup-label { font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 8px; font-weight: 600; }
+.count-buttons { display: flex; gap: 10px; }
+.count-btn { width: 52px; height: 52px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; font-size: 20px; font-weight: 700; font-family: 'Nunito', sans-serif; cursor: pointer; transition: all 0.2s; }
+.count-btn.active { background: var(--yellow); color: var(--dark); border-color: var(--yellow); transform: scale(1.1); }
+.player-inputs { display: flex; flex-direction: column; gap: 10px; }
+.player-input-row { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.1); border-radius: 12px; padding: 10px 14px; }
+.player-avatar { font-size: 28px; }
+.player-input-field { flex: 1; background: transparent; border: none; border-bottom: 2px solid rgba(255,255,255,0.3); color: white; font-size: 16px; font-family: 'Nunito', sans-serif; font-weight: 600; padding: 4px 0; outline: none; }
+.player-input-field::placeholder { color: rgba(255,255,255,0.4); }
+.player-input-field:focus { border-bottom-color: var(--yellow); }
+
+/* ══════════════════════════════════════════════════════
+   GAME SCREEN — layout baru: papan LEBAR, panel kanan kompak
+   ══════════════════════════════════════════════════════ */
+#screen-game { padding: 0; overflow: hidden; }
+
+/* Header tipis di atas */
+.game-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  background: rgba(0,0,0,0.35);
+  flex-shrink: 0;
+  min-height: 40px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.turn-info { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 3px 10px; flex-shrink: 0; }
+.turn-info span:first-child { font-size: 16px; }
+#turn-name { font-size: 12px; font-weight: 700; color: var(--yellow); }
+.score-bar { display: flex; gap: 5px; flex: 1; overflow-x: auto; padding: 0 4px; }
+.score-chip { display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 3px 10px; white-space: nowrap; font-size: 11px; font-weight: 700; color: white; border: 1.5px solid transparent; }
+.score-chip.active-player { background: rgba(255,215,61,0.2); border-color: var(--yellow); color: var(--yellow); }
+.chip-avatar { font-size: 12px; }
+.btn-pause { background: rgba(255,255,255,0.12); border: none; color: white; font-size: 16px; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; flex-shrink: 0; }
+
+/* Body: papan kiri BESAR + panel kanan sempit */
+.game-body {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* PAPAN — mengisi sisa ruang */
+.board-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.game-board {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2px;
+  /* Papan maks mengisi lebar layar minus panel kanan (220px) */
+  width: min(calc(100vw - 224px), calc(100vh - 46px));
+  height: min(calc(100vw - 224px), calc(100vh - 46px));
+  max-width: 740px;
+  max-height: 740px;
+}
+
+/* CELLS */
+.cell { border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; position: relative; overflow: hidden; padding: 2px; }
+.cell-num { font-size: clamp(6px, 1.1vw, 13px); opacity: 0.85; line-height: 1; }
+.cell-icon { font-size: clamp(10px, 1.5vw, 18px); line-height: 1; }
+.cell-normal-a { background: rgba(255,255,255,0.13); color: rgba(255,255,255,0.8); }
+.cell-normal-b { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.6); }
+.cell-snake  { background: #c0392b; color: white; }
+.cell-ladder { background: #27ae60; color: white; }
+.cell-bonus  { background: #e67e22; color: white; }
+.cell-trap   { background: #8e44ad; color: white; }
+.cell-start  { background: #2196F3; color: white; }
+.cell-end    { background: var(--yellow); color: #333; }
+.cell.highlight { box-shadow: 0 0 0 2px var(--yellow); z-index: 2; animation: pulse-cell 0.8s infinite alternate; }
+@keyframes pulse-cell { to { box-shadow: 0 0 0 4px var(--yellow); } }
+
+/* PION */
+.pion-container { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 1px; pointer-events: none; }
+.pion { width: clamp(10px, 1.8vw, 20px); height: clamp(10px, 1.8vw, 20px); border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; font-size: clamp(6px, 0.9vw, 11px); font-weight: 800; color: white; flex-shrink: 0; animation: pion-pop 0.3s ease; }
+@keyframes pion-pop { 0%{transform:scale(0)} 70%{transform:scale(1.3)} 100%{transform:scale(1)} }
+
+/* ══════════════════════════════════════════════════════
+   SIDE PANEL (kanan) — lebih lebar & proporsional
+   ══════════════════════════════════════════════════════ */
+.side-panel {
+  width: 214px;
+  flex-shrink: 0;
+  background: rgba(0,0,0,0.28);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 8px;
+  overflow-y: auto;
+  border-left: 1px solid rgba(255,255,255,0.08);
+}
+
+.side-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+/* Skor */
+.side-scores { background: rgba(255,255,255,0.06); border-radius: 10px; padding: 8px; }
+.score-list { display: flex; flex-direction: column; gap: 5px; }
+.score-row { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: white; border-radius: 8px; padding: 5px 6px; transition: background 0.2s; }
+.score-row.active { background: rgba(255,215,61,0.2); color: var(--yellow); }
+.score-avatar { font-size: 16px; }
+.score-info { flex: 1; }
+.score-name { font-size: 12px; }
+.score-pos { font-size: 10px; opacity: 0.65; }
+.score-pts { font-size: 12px; color: var(--yellow); font-weight: 800; }
+
+/* Giliran */
+.side-turn { background: rgba(255,215,61,0.1); border: 1px solid rgba(255,215,61,0.3); border-radius: 10px; padding: 7px 8px; text-align: center; }
+.side-turn-name { font-family: 'Fredoka One', sans-serif; font-size: 17px; color: var(--yellow); }
+
+/* ── DADU — lebih kecil & putih bersih ── */
+.side-dice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 10px 8px 8px;
+}
+
+.dice-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 72px;
+  justify-content: center;
+}
+
+.dice-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  overflow: visible;
+}
+
+.dice-number {
+  font-family: 'Fredoka One', sans-serif;
+  font-size: 26px;
+  color: var(--yellow);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 12px rgba(255,215,61,0.4);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  min-height: 30px;
+  line-height: 1;
+}
+
+/* ── 3D CSS DICE — lebih kecil & warna putih bersih ── */
+.dice-scene {
+  width: 50px;
+  height: 50px;
+  perspective: 600px;
+  perspective-origin: 55% 40%;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.55));
+  transition: filter 0.3s ease;
+}
+
+.dice-scene.landing-glow {
+  filter: drop-shadow(0 0 10px #FFD93D) drop-shadow(0 4px 10px rgba(0,0,0,0.55));
+}
+
+.dice-cube {
+  width: 50px;
+  height: 50px;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(-22deg) rotateY(28deg);
+  transition: transform 0.15s linear;
+}
+
+.dice-face {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 5px;
+  box-sizing: border-box;
+  backface-visibility: hidden;
+  /* Putih bersih — semua sisi sama agar terkesan natural */
+  background: #ffffff;
+  border: 1.5px solid rgba(180,180,200,0.5);
+}
+
+/* Sedikit shading per sisi untuk kedalaman 3D */
+.face-front  { background: #ffffff; }
+.face-back   { background: #f0f0f0; }
+.face-right  { background: #f5f5f5; }
+.face-left   { background: #f5f5f5; }
+.face-top    { background: #fafafa; }
+.face-bottom { background: #e8e8e8; }
+
+/* Posisi sisi dalam kubus */
+.face-front  { transform: rotateY(  0deg) translateZ(25px); }
+.face-back   { transform: rotateY(180deg) translateZ(25px); }
+.face-right  { transform: rotateY( 90deg) translateZ(25px); }
+.face-left   { transform: rotateY(-90deg) translateZ(25px); }
+.face-top    { transform: rotateX( 90deg) translateZ(25px); }
+.face-bottom { transform: rotateX(-90deg) translateZ(25px); }
+
+.pip {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #444, #111);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.15), 0 1px 2px rgba(0,0,0,0.4);
+  align-self: center;
+  justify-self: center;
+}
+
+.pip-empty {
+  width: 8px;
+  height: 8px;
+}
+
+/* Kamera */
+.side-camera {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 10px;
+  padding: 6px;
+}
+.gesture-cam-wrap {
+  position: relative;
+  width: 198px;
+  height: 148px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #111;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.gesture-canvas { width: 198px; height: 148px; display: block; border-radius: 8px; }
+.gesture-feedback { position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 12px; font-weight: 800; color: #FFD93D; opacity: 0; transition: opacity 0.3s; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+.gesture-status { font-size: 10px; color: rgba(255,255,255,0.7); font-weight: 600; text-align: center; line-height: 1.3; }
+.gesture-label { font-size: 14px; font-weight: 800; color: #FFD93D; text-align: center; }
+
+/* Legend */
+.side-legend { display: flex; flex-direction: column; gap: 3px; padding: 2px 0; }
+.leg { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px; color: white; }
+.leg-ladder { background: #27ae60; }
+.leg-snake  { background: #c0392b; }
+.leg-bonus  { background: #e67e22; }
+.leg-trap   { background: #8e44ad; }
+
+/* ── SOAL ── */
+.question-screen { overflow-y: auto; }
+.question-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: rgba(0,0,0,0.2); flex-shrink: 0; }
+.q-badge { font-size: 15px; font-weight: 800; color: var(--yellow); background: rgba(255,215,61,0.15); border-radius: 20px; padding: 6px 14px; }
+.q-timer { font-size: 18px; font-weight: 800; color: white; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 6px 14px; min-width: 70px; text-align: center; }
+.q-timer.urgent { color: #ff5252; animation: blink 0.5s infinite; }
+@keyframes blink { 50%{opacity:0.4} }
+.question-box { margin: 20px 16px 16px; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 24px 20px; text-align: center; }
+.q-label { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 12px; font-weight: 600; }
+.q-text { font-family: 'Fredoka One', sans-serif; font-size: clamp(26px,5vw,42px); color: white; line-height: 1.3; white-space: pre-line; }
+.q-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px; }
+.choice-btn { background: rgba(255,255,255,0.1); border: 2.5px solid rgba(255,255,255,0.2); border-radius: 14px; color: white; font-family: 'Nunito', sans-serif; font-size: clamp(16px,3vw,22px); font-weight: 800; padding: 16px 10px; cursor: pointer; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.choice-btn .choice-letter { font-size: 11px; font-weight: 600; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
+.choice-btn:active { transform: scale(0.96); }
+.choice-btn.correct { background: #27ae60; border-color: #27ae60; animation: correct-pop 0.3s; }
+.choice-btn.wrong   { background: #c0392b; border-color: #c0392b; }
+@keyframes correct-pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+.q-feedback { margin: 14px 16px 0; border-radius: 14px; padding: 14px 16px; text-align: center; font-weight: 700; font-size: 15px; line-height: 1.5; }
+.q-feedback.correct-fb { background: rgba(39,174,96,0.3); border: 2px solid #27ae60; color: #a8f0c0; }
+.q-feedback.wrong-fb   { background: rgba(192,57,43,0.3); border: 2px solid #c0392b; color: #f9c0ba; }
+.hidden { display: none !important; }
+
+/* ── GAME OVER ── */
+#screen-gameover { align-items: center; justify-content: center; overflow-y: auto; }
+.gameover-content { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 32px 24px; text-align: center; }
+.winner-trophy { font-size: 80px; animation: bounce 1s infinite; }
+.winner-title { font-family: 'Fredoka One', sans-serif; font-size: 40px; color: var(--yellow); }
+.winner-name { font-size: 22px; color: white; font-weight: 800; }
+.final-scores { width: 100%; max-width: 320px; background: rgba(255,255,255,0.1); border-radius: 16px; overflow: hidden; }
+.final-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 700; color: white; }
+.final-row:last-child { border-bottom: none; }
+.final-rank { font-size: 20px; width: 28px; text-align: center; }
+.final-name { flex: 1; text-align: left; font-size: 15px; }
+.final-pos  { font-size: 13px; color: rgba(255,255,255,0.6); }
+.final-row.rank-1 { background: rgba(255,215,61,0.15); }
+.gameover-buttons { display: flex; gap: 12px; width: 100%; max-width: 320px; }
+.gameover-buttons .btn { flex: 1; }
+
+/* ── OVERLAY ── */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.overlay-box, .anim-box { background: linear-gradient(135deg,#1a237e,#283593); border-radius: 24px; padding: 32px 28px; text-align: center; display: flex; flex-direction: column; gap: 14px; border: 2px solid rgba(255,255,255,0.2); min-width: 220px; }
+.overlay-box h3 { font-size: 22px; color: white; }
+.anim-emoji { font-size: 72px; animation: bounce 0.5s ease infinite alternate; }
+.anim-text { font-family: 'Fredoka One', sans-serif; font-size: 28px; color: var(--yellow); }
+
+/* ── TOMBOL ── */
+.btn { border: none; border-radius: 14px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 16px; padding: 15px 24px; cursor: pointer; transition: transform 0.12s, box-shadow 0.12s; width: 100%; }
+.btn:active { transform: scale(0.96); }
+.btn-main { background: var(--yellow); color: #1a237e; box-shadow: 0 4px 0 #b8970a, 0 6px 12px rgba(0,0,0,0.3); }
+.btn-main:active { box-shadow: 0 2px 0 #b8970a; transform: translateY(2px) scale(0.98); }
+.btn-secondary { background: rgba(255,255,255,0.15); color: white; border: 2px solid rgba(255,255,255,0.3); }
+.btn-dice { background: linear-gradient(135deg,#e91e63,#c2185b); color: white; font-size: 15px; box-shadow: 0 3px 0 #880e4f, 0 5px 10px rgba(0,0,0,0.3); padding: 10px 16px; width: 100%; border-radius: 12px; }
+.btn-dice:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+.screen-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px 10px; flex-shrink: 0; }
+.screen-header h2 { font-family: 'Fredoka One', sans-serif; font-size: 22px; color: var(--yellow); }
+.btn-back { background: rgba(255,255,255,0.15); border: none; color: white; font-size: 14px; font-family: 'Nunito', sans-serif; font-weight: 700; padding: 8px 12px; border-radius: 10px; cursor: pointer; flex-shrink: 0; }
+
+/* ── ANIMASI ── */
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+@keyframes spin { to{transform:rotate(360deg)} }
+.confetti { position: fixed; border-radius: 2px; animation: fall 1.5s ease forwards; pointer-events: none; z-index: 200; }
+@keyframes fall { 0%{transform:translateY(-20px) rotate(0);opacity:1} 100%{transform:translateY(100vh) rotate(720deg);opacity:0} }
+
+/* ── RESPONSIVE: layar kecil ── */
+@media (max-width: 600px) {
+  .side-panel { width: 150px; padding: 5px; gap: 5px; }
+  .gesture-cam-wrap { width: 138px; height: 104px; }
+  .gesture-canvas { width: 138px; height: 104px; }
+  .game-board {
+    width: min(calc(100vw - 160px), calc(100vh - 46px));
+    height: min(calc(100vw - 160px), calc(100vh - 46px));
+  }
+}

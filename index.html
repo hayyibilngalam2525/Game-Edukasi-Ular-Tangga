@@ -1,0 +1,213 @@
+<!--
+============================================================
+index.html — Struktur Halaman Snake Quiz Adventure
+------------------------------------------------------------
+Halaman ini terdiri dari beberapa "screen" (div.screen) yang
+ditampilkan/disembunyikan oleh showScreen() di game.js — bukan
+multi-halaman, semua tetap dalam satu file HTML:
+  1. screen-menu      — Menu utama
+  2. screen-tutorial   — Cara bermain
+  3. screen-setup      — Pengaturan jumlah & nama pemain
+  4. screen-game       — Papan permainan + panel skor/dadu/kamera
+  5. screen-question   — Tampilan soal & pilihan jawaban
+  6. screen-gameover   — Hasil akhir & pemenang
+Ditambah 2 overlay (pause & animasi efek) yang muncul di atas
+screen-game tanpa pindah screen.
+Library eksternal: MediaPipe (camera_utils, drawing_utils, hands)
+digunakan oleh gesture.js untuk deteksi gestur tangan kocok dadu.
+Urutan <script> di bawah penting: questions.js dan gesture.js
+harus dimuat sebelum game.js karena game.js memanggil fungsi
+dari keduanya.
+============================================================
+-->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <title>Snake Quiz Adventure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <!-- MediaPipe: dipakai gesture.js untuk membaca gestur tangan dari kamera -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+<!-- ===== MENU ===== -->
+<div id="screen-menu" class="screen active">
+  <div class="stars"></div>
+  <div class="menu-content">
+    <div class="game-logo">
+      <div class="logo-emoji">🎲🐍</div>
+      <h1 class="logo-title">Snake Quiz</h1>
+      <p class="logo-sub">Adventure</p>
+      <p class="logo-desc">Belajar IPA, IPS &amp; Matematika Sambil Bermain!</p>
+    </div>
+    <div class="menu-buttons">
+      <button class="btn btn-main" onclick="showScreen('screen-setup')">🎮 Mulai Bermain</button>
+      <button class="btn btn-secondary" onclick="showScreen('screen-tutorial')">📖 Cara Bermain</button>
+    </div>
+    <div class="menu-deco">
+      <span>➕</span><span>✖️</span><span>➗</span><span>➖</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TUTORIAL ===== -->
+<div id="screen-tutorial" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="showScreen('screen-menu')">← Kembali</button>
+    <h2>📖 Cara Bermain</h2>
+  </div>
+  <div class="tutorial-content">
+    <div class="tut-card"><div class="tut-icon">✊</div><div><h3>Gestur Tangan</h3><p>Kepalkan dan guncang tangan di depan kamera untuk melempar dadu!</p></div></div>
+    <div class="tut-card"><div class="tut-icon">❓</div><div><h3>Soal di Setiap Kotak</h3><p>Setiap berhenti di kotak manapun, jawab soal IPA, IPS, atau Matematika!</p></div></div>
+    <div class="tut-card"><div class="tut-icon">🪜</div><div><h3>Tangga = Naik!</h3><p>Jawab benar di kotak tangga → naik ke kotak lebih tinggi.</p></div></div>
+    <div class="tut-card"><div class="tut-icon">🐍</div><div><h3>Ular = Turun!</h3><p>Jawab salah di kotak ular → turun ke kotak lebih rendah.</p></div></div>
+    <div class="tut-card"><div class="tut-icon">⭐</div><div><h3>Kotak Bonus</h3><p>Jawab benar → maju 3 kotak ekstra!</p></div></div>
+    <div class="tut-card"><div class="tut-icon">🏆</div><div><h3>Cara Menang</h3><p>Pemain pertama yang mencapai kotak 100 adalah pemenang!</p></div></div>
+  </div>
+</div>
+
+<!-- ===== SETUP ===== -->
+<div id="screen-setup" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="showScreen('screen-menu')">← Kembali</button>
+    <h2>👥 Siapa yang Bermain?</h2>
+  </div>
+  <div class="setup-content">
+    <div class="player-count-selector">
+      <p class="setup-label">Jumlah Pemain:</p>
+      <div class="count-buttons">
+        <button class="count-btn active" onclick="setPlayerCount(2)">2</button>
+        <button class="count-btn" onclick="setPlayerCount(3)">3</button>
+        <button class="count-btn" onclick="setPlayerCount(4)">4</button>
+      </div>
+    </div>
+    <div id="player-inputs" class="player-inputs"></div>
+    <button class="btn btn-main" onclick="startGame()">🚀 Mulai Game!</button>
+  </div>
+</div>
+
+<!-- ===== GAME BOARD — layout baru ===== -->
+<div id="screen-game" class="screen">
+
+  <!-- Header tipis -->
+  <div class="game-header">
+    <div id="turn-info" class="turn-info">
+      <span id="turn-avatar">🔴</span>
+      <span id="turn-name">Pemain 1</span>
+    </div>
+    <div id="score-bar" class="score-bar"></div>
+    <button class="btn-pause" onclick="togglePause()">⏸</button>
+  </div>
+
+  <!-- Body: papan kiri + panel kanan -->
+  <div class="game-body">
+
+    <!-- PAPAN — full kiri -->
+    <div class="board-wrap">
+      <div id="game-board" class="game-board"></div>
+    </div>
+
+    <!-- PANEL KANAN: skor + dadu + kamera -->
+    <div class="side-panel">
+
+      <!-- Skor pemain -->
+      <div class="side-scores">
+        <p class="side-label">📊 SKOR</p>
+        <div id="score-list" class="score-list"></div>
+      </div>
+
+      <!-- Giliran -->
+      <div class="side-turn">
+        <p class="side-label">👤 Giliran</p>
+        <div id="side-turn-name" class="side-turn-name">-</div>
+      </div>
+
+      <!-- Dadu -->
+      <div class="side-dice">
+        <div class="dice-wrap">
+          <div id="dice-display" class="dice-display"><div class="dice-scene" id="dice-scene"><div class="dice-cube" id="dice-cube"><div class="dice-face face-front" id="face-front"></div><div class="dice-face face-back" id="face-back"></div><div class="dice-face face-right" id="face-right"></div><div class="dice-face face-left" id="face-left"></div><div class="dice-face face-top" id="face-top"></div><div class="dice-face face-bottom" id="face-bottom"></div></div></div></div>
+          <div id="dice-number" class="dice-number"></div>
+        </div>
+        <button id="btn-roll" class="btn btn-dice" onclick="rollDice()">🎲 Lempar!</button>
+      </div>
+
+      <!-- Kamera gesture -->
+      <div class="side-camera">
+        <div class="gesture-cam-wrap">
+          <video id="gesture-video" playsinline muted autoplay style="display:none"></video>
+          <canvas id="gesture-canvas" width="198" height="148" class="gesture-canvas"></canvas>
+          <div id="gesture-feedback" class="gesture-feedback"></div>
+        </div>
+        <p id="gesture-status" class="gesture-status">📷 Memuat...</p>
+        <p id="gesture-label" class="gesture-label">...</p>
+      </div>
+
+      <!-- Legend -->
+      <div class="side-legend">
+        <span class="leg leg-ladder">🪜 Tangga</span>
+        <span class="leg leg-snake">🐍 Ular</span>
+        <span class="leg leg-bonus">⭐ Bonus</span>
+        <span class="leg leg-trap">💣 Jebakan</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== SOAL ===== -->
+<div id="screen-question" class="screen question-screen">
+  <div class="question-header">
+    <div id="q-type-badge" class="q-badge">❓ Jawab soal!</div>
+    <div id="q-timer" class="q-timer">⏱ 30</div>
+  </div>
+  <div class="question-box">
+    <p class="q-label">Jawab soal ini:</p>
+    <p id="q-text" class="q-text">7 × 8 = ?</p>
+  </div>
+  <div id="q-choices" class="q-choices"></div>
+  <div id="q-feedback" class="q-feedback hidden"></div>
+</div>
+
+<!-- ===== GAME OVER ===== -->
+<div id="screen-gameover" class="screen">
+  <div class="gameover-content">
+    <div class="winner-trophy">🏆</div>
+    <h2 class="winner-title">Selamat!</h2>
+    <p id="winner-name" class="winner-name">Andi Menang!</p>
+    <div id="final-scores" class="final-scores"></div>
+    <div class="gameover-buttons">
+      <button class="btn btn-main" onclick="restartGame()">🔄 Main Lagi</button>
+      <button class="btn btn-secondary" onclick="showScreen('screen-menu')">🏠 Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY PAUSE -->
+<div id="overlay-pause" class="overlay hidden">
+  <div class="overlay-box">
+    <h3>⏸ Game Dijeda</h3>
+    <button class="btn btn-main" onclick="togglePause()">▶️ Lanjutkan</button>
+    <button class="btn btn-secondary" onclick="quitGame()">🏠 Keluar</button>
+  </div>
+</div>
+
+<!-- OVERLAY ANIMASI -->
+<div id="overlay-anim" class="overlay hidden">
+  <div class="anim-box">
+    <div id="anim-emoji" class="anim-emoji">🪜</div>
+    <p id="anim-text" class="anim-text">Naik Tangga!</p>
+  </div>
+</div>
+
+<script src="questions.js"></script>
+<script src="gesture.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
